@@ -1,0 +1,66 @@
+;Joselyne Guillen
+;CS M145
+;nasm 2.13.02
+
+section .data   ;section to initialize variables
+ 
+section .bss    ;section to declare variables
+    
+    userStringChar resb 1 ;declare 1 bit variable that will hold characters from the user generated string
+
+section .text   ;section that holds the code
+	global _start ;shows where program starts
+
+_start:
+
+readUserChar: ;label under which the characters in the user generated string are read one by one
+
+	mov eax,3              ;the system call for read   
+	mov ebx,0              ;file descriptor stdin
+	mov ecx,userStringChar ;variable that holds user input
+	mov edx,1              ;size of variable
+	int 80h                ;call kernel and reads user input
+    
+    cmp [userStringChar], byte 'a' ;compares read character with a lowercase a
+    jl convertToLowerCase          ;if read character is less than lower case a, jump to convertToLowerCase label
+    
+    cmp [userStringChar], byte 'a' ;compares read character with a lowercase a
+    jge convertToUpperCase         ;if read character is greater than or equal to lower case a, jump to convertToUpperCase label
+    
+    jmp End                        ;jump to end of the program in case neither of the above conditions are met (for precaution)
+    
+convertToUpperCase:  ;label under which the read character is converted to an upper case letter
+    
+    cmp [userStringChar], byte '.' ;compares read character with a period
+    je End                         ;if they are equal, jump to the end of the program. This signifies the end of the user generated string
+    
+    sub [userStringChar], byte ' ' ;subtract ascii for space (32) from the read character to convert to upper case letter
+    
+	mov eax,4                      ;the system call for write  
+	mov ebx,1                      ;file descriptor stdout
+	mov ecx,userStringChar         ;variable that holds converted read character
+	mov edx,1                      ;length of what is to be displayed
+	int 80h                        ;call the kernel and display converted character
+
+    jmp readUserChar               ;jump to the readUserChar label to loop back and repeat the process with the next character in the user generated string
+    
+convertToLowerCase: ;label under which the read character is converted to a lower case letter
+
+    cmp [userStringChar], byte '.' ;compares read character with a period
+    je End                         ;if they are equal, jump to the end of the program. This signifies the end of the user generated string
+
+    add [userStringChar], byte ' ' ;add ascii for space (32) to the read character to convert to lower case letter
+    
+	mov eax,4                      ;the system call for write      
+	mov ebx,1                      ;file descriptor stdout
+	mov ecx,userStringChar         ;variable that holds converted read character
+	mov edx,1                      ;length of what is to be displayed
+	int 80h                        ;call the kernel and display converted character
+
+    jmp readUserChar               ;jump to the readUserChar label to loop back and repeat the process with the next character in the user generated string
+    
+    
+End: ;label under which the program ends
+	mov eax,1            ; The system call for exit (sys_exit)
+	mov ebx,0            ; Exit with return code of 0 (no error)
+	int 80h;
